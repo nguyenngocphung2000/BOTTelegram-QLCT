@@ -29,7 +29,7 @@ Bạn có thể:
 1. Mở Google Sheets > Extensions > Apps Script.
 2. Dán mã sau:
 
-‘’’
+```
 
 const TOKEN = "YOUR_TELEGRAM_BOT_TOKEN";
 const API_URL = `https://api.telegram.org/bot${TOKEN}`;
@@ -235,7 +235,7 @@ function sendMessage(chatId, text) {
     payload: JSON.stringify({ chat_id: chatId, text }),
   });
 }
-‘’’
+```
 
 3. Thay thế:
    - `YOUR_TELEGRAM_BOT_TOKEN` bằng token bot Telegram.
