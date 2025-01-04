@@ -266,8 +266,8 @@ Nhập giao dịch theo cú pháp:
 <số tiền> <thu/chi> <mô tả>
 ```
 #### Ví dụ:
-- **Thu nhập:** `500000 thu Lương tháng 1`
-- **Chi tiêu:** `200000 chi Mua sách giáo khoa`
+- **Thu nhập:** `10tr thu Lương tháng 1`
+- **Chi tiêu:** `256k chi Mua sách giáo khoa`
 
 ### 3.3. Xem báo cáo
 - **Báo cáo tổng:** `/report`
@@ -290,8 +290,8 @@ Nhập giao dịch theo cú pháp:
 ## 4. Ví dụ cụ thể
 
 ### Thêm giao dịch
-- Thu nhập: `1000000 thu Tiền thưởng cuối năm`
-- Chi tiêu: `300000 chi Mua thực phẩm`
+- Thu nhập: `13058k thu Tiền thưởng cuối năm`
+- Chi tiêu: `69 chi mua dầu ăn`
 
 ### Báo cáo chi tiết
 1. Báo cáo tổng, sắp xếp theo thứ tự giảm dần:
@@ -335,5 +335,6 @@ Nhập giao dịch theo cú pháp:
  
 *Đảm bảo bot Telegram đã được kết nối đúng Webhook.*
 
+***Cần tư vấn liên hệ t.me/nothing3272***
 
 ---
