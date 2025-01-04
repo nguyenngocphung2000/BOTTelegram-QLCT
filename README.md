@@ -84,7 +84,7 @@ Nhập giao dịch theo cú pháp:
 
 ### Thêm giao dịch
 - Thu nhập: `13058k thu Tiền thưởng cuối năm`
-- Chi tiêu: `69 chi mua dầu ăn`
+- Chi tiêu: `69k chi mua dầu ăn`
 
 ### Báo cáo chi tiết
 1. Báo cáo tổng, sắp xếp theo thứ tự giảm dần:
