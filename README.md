@@ -5,7 +5,7 @@ Telegram bot giúp bạn quản lý tài chính cá nhân, lưu trữ dữ liệ
 
 Bạn có thể:
 - Thêm giao dịch thu/chi.
-- Xem báo cáo theo ngày, tháng.
+- Xem báo cáo theo tuần, tháng.
 - Xóa giao dịch gần nhất hoặc toàn bộ dữ liệu.
 
 ---
@@ -251,7 +251,7 @@ function sendMessage(chatId, text) {
    ```
    https://api.telegram.org/bot<TOKEN>/setWebhook?url=<DEPLOYMENT_URL>
    ```
-   Thay `<TOKEN>` và `<DEPLOYMENT_URL>` bằng giá trị của bạn.
+   Thay `<TOKEN>` và `<DEPLOYMENT_URL>` lúc bạn sao chép url triển khai.
 
 ---
 
@@ -324,7 +324,16 @@ Nhập giao dịch theo cú pháp:
 ---
 
 ## 5. Lưu ý
-- Bot yêu cầu được cấp quyền truy cập Google Sheets để ghi dữ liệu.
-- Đảm bảo webhook hoạt động chính xác.
+
+*Quy ước: 1k = 1000VND, 1tr = 1000000VND*
+
+*Không nhập 5tr2 hoặc lẻ, nếu lẻ thì nhập 5200k*
+
+*Google Sheets không được xóa hoặc thay đổi ID.*
+ 
+*Tài khoản Gmail cần cấp quyền cho Google Sheets khi cài Webhook.*
+ 
+*Đảm bảo bot Telegram đã được kết nối đúng Webhook.*
+
 
 ---
