@@ -29,6 +29,8 @@ Bạn có thể:
 1. Mở Google Sheets > Extensions > Apps Script.
 2. Dán mã sau:
 
+ [code](https://raw.githubusercontent.com/nguyenngocphung2000/BOTTelegram-QLCT/refs/heads/main/Code)
+
 ```
 
 const TOKEN = "YOUR_TELEGRAM_BOT_TOKEN";
