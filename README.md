@@ -28,8 +28,9 @@ Bạn có thể:
 ### 2.3. Triển khai Google Apps Script
 1. Mở Google Sheets > Extensions > Apps Script.
 2. Dán mã sau:
-   ’’’
-   
+
+’’’
+
 const TOKEN = "YOUR_TELEGRAM_BOT_TOKEN";
 const API_URL = `https://api.telegram.org/bot${TOKEN}`;
 const SHEET_ID = "YOUR_SHEET_ID";
@@ -234,6 +235,7 @@ function sendMessage(chatId, text) {
     payload: JSON.stringify({ chat_id: chatId, text }),
   });
 }
+
 ’’’
 
 4. Thay thế:
