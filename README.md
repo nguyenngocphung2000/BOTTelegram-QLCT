@@ -18,12 +18,8 @@ Bạn có thể:
 3. Sau khi hoàn tất, bạn sẽ nhận được **TOKEN** để kết nối bot.
 
 ### 2.2. Tạo Google Sheets
-1. Tạo một bảng tính mới trên Google Sheets.
-2. Thêm tiêu đề các cột: `Thời gian`, `Loại`, `Số tiền`, `Mô tả`.
-3. Lấy **ID của bảng tính** từ URL:
-   ```
-   https://docs.google.com/spreadsheets/d/YOUR_SHEET_ID/edit
-   ```
+1. Tạo Google Sheet mới với các cột: **Thời gian**, **Loại**, **Số tiền**, **Mô tả**.  
+2. Lấy **Sheet ID** từ URL Google Sheet.
 
 ### 2.3. Triển khai Google Apps Script
 1. Mở Google Sheets > Extensions > Apps Script.
@@ -244,8 +240,8 @@ function sendMessage(chatId, text) {
  ### 2.5 Triển khai
  
  **Deploy** → **New deployment** → **Web app**:  
-   - **Execute as**: Tôi  
-   - **Who has access**: Bất kỳ ai
+   - **Thực thi bằng tên**: Tôi  
+   - **Người có quyền truy cập**: Bất kỳ ai
    -  Sau đó nhấn triển khai và cấp quyền  
  #### Lấy **Web App URL** sau khi triển khai(copy cả đoạn link nhé).
 
