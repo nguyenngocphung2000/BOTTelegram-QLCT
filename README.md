@@ -241,13 +241,28 @@ function sendMessage(chatId, text) {
 4. Thay thế:
    - `YOUR_TELEGRAM_BOT_TOKEN` bằng token bot Telegram.
    - `YOUR_SHEET_ID` bằng ID Google Sheets.
-5. Lưu mã và triển khai:
-   - Chọn **Deploy** > **New Deployment**.
-   - Chọn loại **Web App**.
-   - Đặt quyền **Anyone** can execute.
-   - Sao chép URL triển khai.
+5. **Deploy** → **New deployment** → **Web app**:  
+   - **Execute as**: Tôi  
+   - **Who has access**: Bất kỳ ai
+   -  Sau đó nhấn triển khai và cấp quyền  
+6. Lấy **Web App URL** sau khi triển khai(copy cả đoạn link nhé).
 
-### 2.4. Kết nối Webhook
+### **Bước 4: Cấu Hình Webhook**
+
+Truy cập URL sau để kết nối webhook:
+
+```
+https://api.telegram.org/bot<TOKEN>/setWebhook?url=<WEB_APP_URL>
+```
+
+**Ví dụ:**  
+```
+https://api.telegram.org/bot123456789:ABCdefGhIJKlmNoPQRstuVWxyZ/setWebhook?url=https://script.google.com/macros/s/AKfycbxEXAMPLE/exec
+```
+
+---
+
+### 7. Kết nối Webhook
 1. Kết nối bot với webhook:
    ```
    https://api.telegram.org/bot<TOKEN>/setWebhook?url=<DEPLOYMENT_URL>
@@ -256,12 +271,12 @@ function sendMessage(chatId, text) {
 
 ---
 
-## 3. Sử dụng
+## 8. Sử dụng
 
-### 3.1. Bắt đầu sử dụng bot
+### 8.1. Bắt đầu sử dụng bot
 Gửi lệnh `/start` để nhận hướng dẫn cơ bản.
 
-### 3.2. Thêm giao dịch
+### 8.2. Thêm giao dịch
 Nhập giao dịch theo cú pháp:
 ```
 <số tiền> <thu/chi> <mô tả>
@@ -270,7 +285,7 @@ Nhập giao dịch theo cú pháp:
 - **Thu nhập:** `10tr thu Lương tháng 1`
 - **Chi tiêu:** `256k chi Mua sách giáo khoa`
 
-### 3.3. Xem báo cáo
+### 8.3. Xem báo cáo
 - **Báo cáo tổng:** `/report`
 - **Báo cáo tháng:** `/report 01/2025`
 - **Báo cáo tuần:** `/report 04/01/2025`
@@ -335,6 +350,8 @@ Nhập giao dịch theo cú pháp:
 *Tài khoản Gmail cần cấp quyền cho Google Sheets khi cài Webhook.*
  
 *Đảm bảo bot Telegram đã được kết nối đúng Webhook.*
+- **Webhook không hoạt động:** Kiểm tra lại TOKEN và URL.  
+- **Không lưu dữ liệu:** Kiểm tra Sheet ID và quyền truy cập.
 
 ***Cần tư vấn liên hệ t.me/nothing3272***
 
