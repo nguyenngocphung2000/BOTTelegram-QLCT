@@ -22,7 +22,7 @@ Bạn có thể:
 2.	Đổi tên sheet (ví dụ: Finance Data).
 3.	Tạo các cột: **Thời gian**, **Loại**, **Số tiền**, **Mô tả**.
 4.	Lấy Sheet ID từ URL:
-	Ví dụ URL: https://docs.google.com/spreadsheets/d/**1A2B3C4D5E6F7G8H9I0J**/edit#gid=0
+	Ví dụ URL: https://docs.google.com/spreadsheets/d/1A2B3C4D5E6F7G8H9I0J/edit#gid=0
 
 Sheet ID là phần: **1A2B3C4D5E6F7G8H9I0J**
 
