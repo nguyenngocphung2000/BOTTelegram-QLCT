@@ -28,7 +28,7 @@ Bạn có thể:
 
 https://docs.google.com/spreadsheets/d/1A2B3C4D5E6F7G8H9I0J/edit#gid=0
 
-     Sheet ID là phần:     **1A2B3C4D5E6F7G8H9I0J**
+ Sheet ID là phần:     **1A2B3C4D5E6F7G8H9I0J**
 
 ### 2.3. Triển khai Google Apps Script
 1. Mở Google Sheets > Extensions > Apps Script.
