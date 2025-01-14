@@ -21,10 +21,14 @@ Bạn có thể:
 1. Truy cập Google Sheets và tạo một bảng tính mới.
 2.	Đổi tên sheet (ví dụ: Finance Data).
 3.	Tạo các cột: **Thời gian**, **Loại**, **Số tiền**, **Mô tả**.
-4.	Lấy Sheet ID từ URL:
-	Ví dụ URL: https://docs.google.com/spreadsheets/d/1A2B3C4D5E6F7G8H9I0J/edit#gid=0
+4.	Lấy Sheet ID từ URL
 
-Sheet ID là phần: **1A2B3C4D5E6F7G8H9I0J**
+  
+	Ví dụ URL:
+
+https://docs.google.com/spreadsheets/d/1A2B3C4D5E6F7G8H9I0J/edit#gid=0
+
+     Sheet ID là phần:     **1A2B3C4D5E6F7G8H9I0J**
 
 ### 2.3. Triển khai Google Apps Script
 1. Mở Google Sheets > Extensions > Apps Script.
