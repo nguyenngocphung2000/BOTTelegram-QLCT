@@ -246,9 +246,14 @@ function sendMessage(chatId, text) {
  ### 2.4 Thay thế:
    - `YOUR_TELEGRAM_BOT_TOKEN` bằng token bot Telegram.
    - `YOUR_SHEET_ID` bằng ID Google Sheets.
- ### 2.5 Triển khai
+ ### 2.5 Triển khai (Sau khi dán mã code và thay thế các giá trị)
  
- **Deploy** → **New deployment** → **Web app**:  
+ **Deploy** → **New deployment** → **Web app**
+
+ Hoặc
+ 
+  **Triển khai** -> **Tuỳ chọn triển khai mới** 
+   - **Chọn loại**: Ứng dụng web
    - **Thực thi bằng tên**: Tôi  
    - **Người có quyền truy cập**: Bất kỳ ai
    -  Sau đó nhấn triển khai và cấp quyền  
