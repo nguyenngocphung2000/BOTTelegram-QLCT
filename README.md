@@ -358,6 +358,6 @@ Nhập giao dịch theo cú pháp:
 - **Webhook không hoạt động:** Kiểm tra lại TOKEN và URL.  
 - **Không lưu dữ liệu:** Kiểm tra Sheet ID và quyền truy cập.
 
-***Cần tư vấn liên hệ t.me/nothing3272***
+***Cần tư đóng góp ý tưởng hoặc tư vấn liên hệ: t.me/nothing3272***
 
 ---
