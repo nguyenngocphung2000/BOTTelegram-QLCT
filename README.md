@@ -286,9 +286,6 @@ Nhập giao dịch theo cú pháp:
 ```
 <số tiền> <thu/chi> <mô tả>
 ```
-#### Ví dụ:
-- **Thu nhập:** `10tr thu Lương tháng 1`
-- **Chi tiêu:** `256k chi Mua sách giáo khoa`
 
 ### 3.3. Xem báo cáo
 - **Báo cáo tổng:** `/report`
@@ -338,26 +335,22 @@ Nhập giao dịch theo cú pháp:
    /report 01/2025
    ```
 
-### Xóa giao dịch
-- Xóa giao dịch gần nhất: `/undo`.
-- Xóa tất cả dữ liệu: `/reset`.
-
 ---
 
 ## 5. Lưu ý
 
 *Quy ước: 1k = 1000VND, 1tr = 1000000VND*
 
-*Không nhập 5tr2 hoặc lẻ, nếu lẻ thì nhập 5200k*
+*Không nhập 5tr2 hoặc lẻ, nếu lẻ thì nhập 5215k*
 
 *Google Sheets không được xóa hoặc thay đổi ID.*
  
 *Tài khoản Gmail cần cấp quyền cho Google Sheets khi cài Webhook.*
  
 *Đảm bảo bot Telegram đã được kết nối đúng Webhook.*
-- **Webhook không hoạt động:** Kiểm tra lại TOKEN và URL.  
+- **Webhook không hoạt động:** Kiểm tra lại TOKEN và URL, Lúc nhấn triển khai đã cấp quyền chưa.
 - **Không lưu dữ liệu:** Kiểm tra Sheet ID và quyền truy cập.
 
-***Cần tư đóng góp ý tưởng hoặc tư vấn liên hệ: t.me/nothing3272***
+***Đóng góp ý tưởng hoặc cần tư vấn liên hệ: t.me/nothing3272***
 
 ---
