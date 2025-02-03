@@ -86,7 +86,7 @@ function doPost(e) {
     if (text.startsWith("/report")) {
       handleReport(chatId, text);
     } else if (text.startsWith("/reset")) {
-      resetSheet(chatId);
+  resetSheet(chatId, userId);
     } else if (text.startsWith("/undo")) {
       undoLast(chatId);
     } else {
@@ -127,9 +127,9 @@ function sendStartMessage(chatId) {
       `   - \`/delusers <id>\`: _Xóa user._\n\n` +
       `4️⃣ *Khác:*\n` +
       `   - \`/undo\`: _Xóa giao dịch gần nhất._\n` +
-      `   - \`/reset\`: _Xóa dữ liệu (trừ user)._\n\n` +
+      `   - \`/reset\`: _Xóa dữ liệu trừ dữ liệu user (chỉ admin)._\n\n` +
         `💡 *Lưu ý:*\n` +
-        `- Số tiền có thể nhập dạng "1234k" (1,234,000) hoặc "1tr" (1,000,000).\n` +
+        `- Số tiền có thể nhập dạng "1234k" (1,234,000) hoặc "1tr" (1,000,000).\n` 
       ;
 
   sendMessage(chatId, startMessage);
@@ -322,6 +322,42 @@ function generateReport(chatId, filter, dateParam, sortOrder) {
 
   sendMessage(chatId, report);
 }
+function resetSheet(chatId, userId) {
+  if (!isAdmin(userId)) {
+    sendMessage(chatId, "🚫 Bạn không có quyền reset dữ liệu.");
+    return;
+  }
+
+  const sheet = SpreadsheetApp.openById(SHEET_ID).getSheetByName("transactions");
+  
+  if (sheet.getLastRow() < 2) {
+    sendMessage(chatId, "⚠️ Không có dữ liệu để reset.");
+    return;
+  }
+
+  sheet.clearContents();
+  sheet.appendRow(["Thời gian", "Loại", "Số tiền", "Mô tả"]);
+
+  sendMessage(chatId, "✅ Đã xóa toàn bộ dữ liệu giao dịch.");
+}
+function undoLast(chatId) {
+  const sheet = SpreadsheetApp.openById(SHEET_ID).getSheetByName("transactions");
+  const lastRow = sheet.getLastRow();
+
+  if (lastRow < 2) { 
+    sendMessage(chatId, "🚫 Không có giao dịch nào để hoàn tác.");
+    return;
+  }
+
+  const lastTransaction = sheet.getRange(lastRow, 1, 1, sheet.getLastColumn()).getValues()[0];
+  sheet.deleteRow(lastRow);
+  
+  sendMessage(
+    chatId,
+    `🔄 Đã hoàn tác giao dịch gần nhất:\n\n📅 *Thời gian:* ${lastTransaction[0]}\n💰 *Số tiền:* ${formatCurrency(lastTransaction[2])}\n📝 *Mô tả:* ${lastTransaction[3]}`
+  );
+}
+
 function isValidDate(date, filter, now) {
   if (filter === "month") {
     return (
