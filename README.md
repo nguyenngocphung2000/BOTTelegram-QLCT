@@ -4,14 +4,18 @@
  ### Quản lý danh sách người dùng được phép sử dụng bot
 
  Phục vui cho việc quản lý hội nhóm được thuận tiện!
+ 
  Chỉ admin mới có quyền thêm/xóa người dùng bằng /addusers và /delusers.
+ 
  UserID là id Telegram của bạn.
+ 
  UserID sẽ được lưu vào sheet riêng.
  
  **Lệnh mới**
 
-    /addusers <user_id> (Thêm người dùng vào danh sách được phép)
-    /delusers <user_id> (Xóa người dùng khỏi danh sách)
+    "/addusers <user_id>" (Thêm người dùng vào danh sách được phép)
+
+    "/delusers <user_id>" (Xóa người dùng khỏi danh sách)
 
 ---
 ## 1. Giới thiệu
@@ -33,9 +37,9 @@ Bạn có thể:
 
 ### 2.2. Tạo Google Sheets
 1. Truy cập Google Sheets và tạo một bảng tính mới.
-2.	Đổi tên sheet (ví dụ: Finance Data).
-3.	Tạo các cột: **Thời gian**, **Loại**, **Số tiền**, **Mô tả**.
-4.	Lấy Sheet ID từ URL
+2. Đổi tên sheet (ví dụ: Finance Data).
+3. Tạo các cột(Không bắt buộc): **Thời gian**, **Loại**, **Số tiền**, **Mô tả**.
+4.Lấy Sheet ID từ URL
 
   
 	Ví dụ URL:
@@ -44,37 +48,117 @@ https://docs.google.com/spreadsheets/d/1A2B3C4D5E6F7G8H9I0J/edit#gid=0
 
  Sheet ID là phần:     **1A2B3C4D5E6F7G8H9I0J**
 
+5. Lấy ADMIN ID (Để sử dụng tính năng add người có quyền dùng bot)
+   Chính là id tài khoản Telegram của bạn, nếu có nhiều hơn 1 admin thì cách nhau bằng dấu phẩy và nằm trong ngoặc kép "
 ### 2.3. Triển khai Google Apps Script
 1. Mở Google Sheets > Extensions > Apps Script.
-2. Dán mã sau:
+2. Dán mã sau (nhớ xoá mã cũ đi):
 
 ```
 
 const TOKEN = "YOUR_TELEGRAM_BOT_TOKEN";
 const API_URL = `https://api.telegram.org/bot${TOKEN}`;
 const SHEET_ID = "YOUR_SHEET_ID";
+const ADMIN_IDS = ["123456789", "987654321"]; // Thay các dãy số ở trong bằng id telegram mà bạn muốn làm admin
 
 function doPost(e) {
   const { message } = JSON.parse(e.postData.contents);
   const chatId = message.chat.id;
   const text = message.text;
+  const userId = message.from.id;
+
+  if (!isAuthorizedUser(userId)) {
+    sendMessage(chatId, "🚫 Bạn không có quyền sử dụng bot này.");
+    return;
+  }
 
   if (text.startsWith("/start")) {
-    sendMessage(
-      chatId,
-      `Chào mừng bạn đến với ứng dụng quản lý tài chính cá nhân!\n\nHướng dẫn sử dụng:\n\n1. Thêm giao dịch:\n   Nhập theo cú pháp: <số tiền> <thu/chi> <mô tả>.\n\n2. Xem báo cáo:\n   - /report: Báo cáo tổng.\n   - /report mm/yyyy: Báo cáo tháng.\n   - /report dd/mm/yyyy: Báo cáo tuần (hiển thị tuần có ngày được chọn).\n   - Thêm "az" hoặc "za" sau lệnh để sắp xếp:\n     Ví dụ: /report az hoặc /report mm/yyyy za.\n\n3. Hủy giao dịch gần nhất:\n   - /undo: Xóa giao dịch gần nhất.\n\n4. Xóa toàn bộ dữ liệu:\n   - /reset: Xóa tất cả dữ liệu trên bảng tính.\n`
-    );
-  } else if (text.startsWith("/report")) {
-    handleReport(chatId, text);
-  } else if (text.startsWith("/reset")) {
-    resetSheet(chatId);
-  } else if (text.startsWith("/undo")) {
-    undoLast(chatId);
+    sendStartMessage(chatId);
+  } else if (text.startsWith("/addusers") || text.startsWith("/delusers")) {
+    if (!isAdmin(userId)) {
+      sendMessage(chatId, "🚫 Bạn không phải là admin.");
+      return;
+    }
+    manageUsers(chatId, userId, text);
   } else {
-    handleTransaction(chatId, text);
+    if (text.startsWith("/report")) {
+      handleReport(chatId, text);
+    } else if (text.startsWith("/reset")) {
+      resetSheet(chatId);
+    } else if (text.startsWith("/undo")) {
+      undoLast(chatId);
+    } else {
+      handleTransaction(chatId, text);
+    }
   }
 }
 
+function isAdmin(userId) {
+  return ADMIN_IDS.includes(String(userId));
+}
+
+function isAuthorizedUser(userId) {
+  const sheet = getOrCreateUserSheet();
+  const lastRow = sheet.getLastRow();
+  
+  if (lastRow < 2) return ADMIN_IDS.includes(String(userId));
+  const userIds = sheet.getRange(2, 1, lastRow - 1, 1).getValues().flat().map(String);
+  return ADMIN_IDS.includes(String(userId)) || userIds.includes(String(userId));
+}
+
+function sendStartMessage(chatId) {
+  ensureSheetsExist();
+
+  const startMessage = `
+*Chào mừng bạn đến với ứng dụng quản lý tài chính cá nhân!*\n\n` +
+      `📌 *Hướng dẫn sử dụng:*\n\n` +
+      `1️⃣ *Thêm giao dịch:*\n   _Nhập theo cú pháp:_ <số tiền> <thu/chi> <mô tả>.\n` +
+        `   *Ví dụ:* \`14629k thu Lương t1\`\n\n` +
+              `2. *Xem báo cáo:*\n` +
+        `   - \`/report\`: Báo cáo tổng.\n` +
+        `   - \`/report mm/yyyy\`: Báo cáo tháng.\n` +
+        `   - \`/report dd/mm/yyyy\`: Báo cáo tuần (hiển thị tuần có ngày được chọn).\n` +
+        `   - Thêm "az" hoặc "za" sau lệnh để sắp xếp:\n` +
+        `     *Ví dụ:* \`/report az\` hoặc \`/report 01/2024 za\`\n\n` +
+      `3️⃣ *Quản lý người dùng(chỉ Admin):*\n` +
+      `   - \`/addusers <id>\`: _Thêm user._\n` +
+      `   - \`/delusers <id>\`: _Xóa user._\n\n` +
+      `4️⃣ *Khác:*\n` +
+      `   - \`/undo\`: _Xóa giao dịch gần nhất._\n` +
+      `   - \`/reset\`: _Xóa dữ liệu (trừ user)._\n\n` +
+        `💡 *Lưu ý:*\n` +
+        `- Số tiền có thể nhập dạng "1234k" (1,234,000) hoặc "1tr" (1,000,000).\n` +
+      ;
+
+  sendMessage(chatId, startMessage);
+}
+
+  function getOrCreateUserSheet() {
+  const ss = SpreadsheetApp.openById(SHEET_ID);
+  let usersSheet = ss.getSheetByName("users");
+
+  if (!usersSheet) {
+    usersSheet = ss.insertSheet("users");
+    usersSheet.appendRow(["UserID"]);
+  }
+
+  return usersSheet;
+}
+function ensureSheetsExist() {
+  const ss = SpreadsheetApp.openById(SHEET_ID);
+
+  let transactionsSheet = ss.getSheetByName("transactions");
+  if (!transactionsSheet) {
+    transactionsSheet = ss.insertSheet("transactions");
+    transactionsSheet.appendRow(["Thời gian", "Loại", "Số tiền", "Mô tả"]);
+  }
+
+  let usersSheet = ss.getSheetByName("users");
+  if (!usersSheet) {
+    usersSheet = ss.insertSheet("users");
+    usersSheet.appendRow(["UserID"]);
+  }
+}
 function handleTransaction(chatId, text) {
   const [amount, type, ...desc] = text.split(" ");
   if (!isValidAmount(amount) || !["thu", "chi"].includes(type.toLowerCase())) {
@@ -82,16 +166,68 @@ function handleTransaction(chatId, text) {
     return;
   }
 
-  const sheet = SpreadsheetApp.openById(SHEET_ID).getActiveSheet();
-  sheet.appendRow([
-    new Date(),
-    type.toLowerCase(),
-    parseAmount(amount),
-    desc.join(" ") || "Không có mô tả",
-  ]);
-  sendMessage(chatId, `Đã thêm giao dịch:\nSố tiền: ${amount}\nLoại: ${type}\nMô tả: ${desc.join(" ")}`);
+  const description = desc.join(" ");
+  const formattedDesc = description.charAt(0).toUpperCase() + description.slice(1);
+  const sheet = SpreadsheetApp.openById(SHEET_ID).getSheetByName("transactions");
+  sheet.appendRow([new Date(), type.toLowerCase(), parseAmount(amount), formattedDesc || "Không có mô tả"]);
+  sendMessage(chatId, `Đã thêm giao dịch:\nSố tiền: ${amount}\nLoại: ${type}\nMô tả: ${formattedDesc}`);
 }
 
+function manageUsers(chatId, userId, text) {
+  const args = text.split(" ");
+  const command = args[0];
+  const targetUserId = args[1];
+
+  if (!targetUserId) {
+    sendMessage(chatId, "🚫 Bạn cần cung cấp ID người dùng.");
+    return;
+  }
+
+  if (command === "/addusers") {
+    addUser(chatId, targetUserId);
+  } else if (command === "/delusers") {
+    removeUser(chatId, targetUserId);
+  } else {
+    sendMessage(chatId, "🚫 Lệnh không hợp lệ.");
+  }
+}
+
+function addUser(chatId, targetUserId) {
+  const sheet = getOrCreateUserSheet();
+  const lastRow = sheet.getLastRow();
+
+  const existingUsers = lastRow > 1
+    ? sheet.getRange(2, 1, lastRow - 1, 1).getValues().flat().map(String)
+    : [];
+
+  if (existingUsers.includes(targetUserId)) {
+    sendMessage(chatId, `🚫 Người dùng ID ${targetUserId} đã có trong danh sách.`);
+    return;
+  }
+
+  sheet.appendRow([targetUserId]);
+  sendMessage(chatId, `✅ Đã thêm người dùng với ID ${targetUserId}.`);
+}
+function removeUser(chatId, targetUserId) {
+  const sheet = getOrCreateUserSheet();
+  const lastRow = sheet.getLastRow();
+
+  if (lastRow < 2) {
+    sendMessage(chatId, `🚫 Không có người dùng nào trong danh sách.`);
+    return;
+  }
+
+  const userIds = sheet.getRange(2, 1, lastRow - 1, 1).getValues().flat().map(String);
+  const userIndex = userIds.indexOf(String(targetUserId));
+
+  if (userIndex === -1) {
+    sendMessage(chatId, `🚫 Không tìm thấy người dùng với ID ${targetUserId}.`);
+    return;
+  }
+
+  sheet.deleteRow(userIndex + 2);
+  sendMessage(chatId, `✅ Đã xóa người dùng với ID ${targetUserId}.`);
+}
 function handleReport(chatId, text) {
   const dateRegex = /\d{2}\/\d{4}|\d{2}\/\d{2}\/\d{4}/;
   const dateParam = text.match(dateRegex)?.[0];
@@ -184,25 +320,6 @@ function generateReport(chatId, filter, dateParam, sortOrder) {
 
   sendMessage(chatId, report);
 }
-
-function resetSheet(chatId) {
-  const sheet = SpreadsheetApp.openById(SHEET_ID).getActiveSheet();
-  sheet.clear();
-  sheet.appendRow(["Thời gian", "Loại", "Số tiền", "Mô tả"]);
-  sendMessage(chatId, "Đã xóa toàn bộ dữ liệu.");
-}
-
-function undoLast(chatId) {
-  const sheet = SpreadsheetApp.openById(SHEET_ID).getActiveSheet();
-  const lastRow = sheet.getLastRow();
-  if (lastRow > 1) {
-    sheet.deleteRow(lastRow);
-    sendMessage(chatId, "Đã xóa giao dịch gần nhất.");
-  } else {
-    sendMessage(chatId, "Không có giao dịch nào để xóa.");
-  }
-}
-
 function isValidDate(date, filter, now) {
   if (filter === "month") {
     return (
@@ -235,12 +352,12 @@ function parseDate(filter, dateParam) {
   return new Date();
 }
 
-function isValidAmount(amount) {
-  return /^[0-9]+(k|tr)?$/.test(amount);
+function parseAmount(amount) {
+  return parseFloat(amount.replace(/tr/gi, "000000").replace(/k/gi, "000")) || 0;
 }
 
-function parseAmount(amount) {
-  return parseFloat(amount.replace("tr", "000000").replace("k", "000")) || 0;
+function isValidAmount(amount) {
+  return /^[0-9]+(k|tr)?$/i.test(amount);
 }
 
 function formatCurrency(amount) {
@@ -251,7 +368,7 @@ function sendMessage(chatId, text) {
   UrlFetchApp.fetch(`${API_URL}/sendMessage`, {
     method: "post",
     contentType: "application/json",
-    payload: JSON.stringify({ chat_id: chatId, text }),
+    payload: JSON.stringify({ chat_id: chatId, text, parse_mode: "Markdown" }),
   });
 }
 
