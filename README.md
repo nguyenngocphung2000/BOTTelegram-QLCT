@@ -429,6 +429,12 @@ Nhập giao dịch theo cú pháp:
 - **Sắp xếp tăng/giảm:** Thêm `az` (tăng) hoặc `za` (giảm).
   - Ví dụ: `/report az`, `/report 01/2025 za`.
 
+### 3.4 Admin có thể thêm/xóa người dùng bằng lệnh:
+- **Thêm user vào danh sách:**/addusers <user_id> 
+- **Xóa user khỏi danh sách:**/delusers <user_id>
+- **Ví dụ:**/addusers 999999999
+- Danh sách user được lưu trong sheet users và không bị mất khi reset dữ liệu.
+  
 #### Ví dụ chi tiết:
 1. Xem toàn bộ giao dịch, sắp xếp tăng dần: `/report az`
 2. Báo cáo chi tiêu tháng 1 năm 2025: `/report 01/2025`
