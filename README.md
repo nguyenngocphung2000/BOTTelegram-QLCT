@@ -49,7 +49,9 @@ https://docs.google.com/spreadsheets/d/1A2B3C4D5E6F7G8H9I0J/edit#gid=0
  Sheet ID là phần:     **1A2B3C4D5E6F7G8H9I0J**
 
 5. Lấy ADMIN ID (Để sử dụng tính năng add người có quyền dùng bot)
-   Chính là id tài khoản Telegram của bạn, nếu có nhiều hơn 1 admin thì cách nhau bằng dấu phẩy và nằm trong ngoặc kép "
+   
+   Chính là dãy số id tài khoản Telegram của bạn, nếu có nhiều hơn 1 admin thì cách nhau bằng dấu phẩy và nằm trong ngoặc kép "
+   
 ### 2.3. Triển khai Google Apps Script
 1. Mở Google Sheets > Extensions > Apps Script.
 2. Dán mã sau (nhớ xoá mã cũ đi):
