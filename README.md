@@ -379,6 +379,8 @@ function sendMessage(chatId, text) {
  ### 2.4 Thay thế:
    - `YOUR_TELEGRAM_BOT_TOKEN` bằng token bot Telegram.
    - `YOUR_SHEET_ID` bằng ID Google Sheets.
+   - `ADMIN_IDS` là các id tài khoản telegram mà bạn muốn làm admin.
+
  ### 2.5 Triển khai (Sau khi dán mã code và thay thế các giá trị)
  
  **Deploy** → **New deployment** → **Web app**
