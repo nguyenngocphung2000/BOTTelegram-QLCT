@@ -8,10 +8,11 @@
  UserID là id Telegram của bạn.
  UserID sẽ được lưu vào sheet riêng.
  
-**Lệnh mới**
+ **Lệnh mới**
 
-***/addusers <user_id>*** (Thêm người dùng vào danh sách được phép)
-***/delusers <user_id>*** (Xóa người dùng khỏi danh sách)
+    /addusers <user_id> (Thêm người dùng vào danh sách được phép)
+    /delusers <user_id> (Xóa người dùng khỏi danh sách)
+
 ---
 ## 1. Giới thiệu
 Telegram bot giúp bạn quản lý tài chính cá nhân, lưu trữ dữ liệu trên Google Sheets và cung cấp báo cáo theo thời gian. 
