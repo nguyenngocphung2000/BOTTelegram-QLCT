@@ -85,7 +85,7 @@ function sendStartMessage(chatId) {
       `   - \`/undo\`: _Xóa giao dịch gần nhất._\n` +
       `   - \`/reset\`: _Xóa dữ liệu (trừ user)._\n\n` +
         `💡 *Lưu ý:*\n` +
-        `- Số tiền có thể nhập dạng "1234k" (1,234,000) hoặc "1tr" (1,000,000).\n` +
+        `- Số tiền có thể nhập dạng "1234k" (1,234,000) hoặc "1tr" (1,000,000).\n`
       ;
 
   sendMessage(chatId, startMessage);
