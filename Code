@@ -9,6 +9,9 @@ function doPost(e) {
   const chatId = message.chat.id;
   const text = message.text;
   const userId = message.from.id;
+if (!isCommand(text)) {
+    return;
+  }
 
   if (!isAuthorizedUser(userId)) {
     sendMessage(chatId, "🚫 Bạn không có quyền sử dụng bot này.");
@@ -31,11 +34,23 @@ function doPost(e) {
     } else if (text.startsWith("/undo")) {
       undoLast(chatId);
     } else {
+      const transactionPattern = /^[0-9]+(k|tr)?\s+(thu|chi)\s+.+/i;
+    if (transactionPattern.test(text)) {
       handleTransaction(chatId, text);
+    }
     }
   }
 }
-
+function isCommand(text) {
+  if (!text) return false;
+  
+  const validCommands = ["/start", "/addusers", "/delusers", "/report", "/reset", "/undo"];
+  if (validCommands.some(cmd => text.startsWith(cmd))) {
+    return true;
+  }
+  const transactionPattern = /^[0-9]+(k|tr)?\s+(thu|chi)\s+.+/i;
+  return transactionPattern.test(text);
+}
 function isAdmin(userId) {
   return ADMIN_IDS.includes(String(userId));
 }
@@ -105,17 +120,36 @@ function ensureSheetsExist() {
 function handleTransaction(chatId, text) {
   const [amount, type, ...desc] = text.split(" ");
   if (!isValidAmount(amount) || !["thu", "chi"].includes(type.toLowerCase())) {
-    sendMessage(chatId, "Lỗi: Nhập đúng cú pháp <số tiền> <thu/chi> <mô tả>.");
+    sendMessage(chatId, "⚠️ *Lỗi:* Vui lòng nhập đúng cú pháp:\n`<số tiền> <thu/chi> <mô tả>`");
     return;
   }
 
   const description = desc.join(" ");
   const formattedDesc = description.charAt(0).toUpperCase() + description.slice(1);
+  const parsedAmount = parseAmount(amount);
   const sheet = SpreadsheetApp.openById(SHEET_ID).getSheetByName("transactions");
-  sheet.appendRow([new Date(), type.toLowerCase(), parseAmount(amount), formattedDesc || "Không có mô tả"]);
-  sendMessage(chatId, `Đã thêm giao dịch:\nSố tiền: ${amount}\nLoại: ${type}\nMô tả: ${formattedDesc}`);
-}
+  sheet.appendRow([new Date(), type.toLowerCase(), parsedAmount, formattedDesc || "Không có mô tả"]);
 
+  const currentTime = new Date().toLocaleString("vi-VN", {
+    hour: "2-digit",
+    minute: "2-digit",
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+    hour12: false
+  });
+
+  const responseMessage = [
+    "✅ *Đã thêm giao dịch mới thành công!*",
+    "",
+    `⏰ *Thời gian:* ${currentTime}`,
+    `💰 *Số tiền:* ${formatCurrency(parsedAmount)}`,
+    `${type.toLowerCase() === "thu" ? "📈" : "📉"} *Loại:* ${type.toLowerCase() === "thu" ? "Thu nhập" : "Chi tiêu"}`,
+    `📝 *Mô tả:* ${formattedDesc || "Không có mô tả"}`
+  ].join("\n");
+
+  sendMessage(chatId, responseMessage);
+}
 function manageUsers(chatId, userId, text) {
   const args = text.split(" ");
   const command = args[0];
