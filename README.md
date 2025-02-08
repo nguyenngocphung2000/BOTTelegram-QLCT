@@ -1,7 +1,10 @@
 # Hướng dẫn cài đặt và sử dụng Telegram Bot quản lý tài chính
 ---
 ## UPDATES
- ### Hạn chế gửi tin nhắn báo sai cú pháp trong nhóm nhiều người, khi nhập đúng cú pháp thu/chi hoặc các lệnh bot mới phản hồi, nhập cú pháp giao dịch sai nhưng sai cú pháp bot vẫn sẽ phản hồi, tương tự các lệnh cũng vậy
+ ### Hạn chế gửi tin nhắn báo sai cú pháp trong nhóm nhiều người.
+  Bỏ qua các tin nhắn không có mục đích tương tác với bot.
+  
+  Khi nhập đúng cú pháp thu/chi hoặc các lệnh bot mới phản hồi, nhập cú pháp giao dịch, các lệnh nhưng sai cú pháp bot vẫn sẽ phản hồi.
  
  ### Quản lý danh sách người dùng được phép sử dụng bot
 
