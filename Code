@@ -229,7 +229,7 @@ function generateReport(chatId, filter, dateParam, sortOrder) {
   const data = sheet.getDataRange().getValues().slice(1);
 
   if (!data.length) {
-    sendMessage(chatId, "Không có dữ liệu.");
+    sendMessage(chatId, "📊 *Thông báo:* Không có dữ liệu để tạo báo cáo.");
     return;
   }
 
@@ -260,40 +260,63 @@ function generateReport(chatId, filter, dateParam, sortOrder) {
       hour12: false,
     });
 
-    const transaction = `${formatCurrency(amount)}: ${desc || "Không có mô tả"} (${formattedReportDate})`;
+    const transaction = `\`${formatCurrency(amount)}\` | ${desc || "Không có mô tả"} | \`${formattedReportDate}\``;
 
     if (type === "thu") {
       income += amount;
-      incomeTransactions.push(`+ ${transaction}`);
+      incomeTransactions.push(`📈 ${transaction}`);
     } else if (type === "chi") {
       expense += amount;
-      expenseTransactions.push(`- ${transaction}`);
+      expenseTransactions.push(`📉 ${transaction}`);
     }
   });
 
   if (!filteredData.length) {
     const range = filter === "week" ? "tuần" : "tháng";
-    sendMessage(chatId, `Không có giao dịch cho ${range} được yêu cầu.`);
+    sendMessage(chatId, `⚠️ *Thông báo:* Không có giao dịch nào trong ${range} được yêu cầu.`);
     return;
   }
 
   const weekInfo =
     filter === "week"
-      ? ` (tuần từ ${now.startOfWeek.toLocaleDateString("vi-VN")} đến ${now.endOfWeek.toLocaleDateString("vi-VN")})`
+      ? `\n📅 *Khoảng thời gian:* ${now.startOfWeek.toLocaleDateString("vi-VN")} - ${now.endOfWeek.toLocaleDateString("vi-VN")}`
       : "";
 
+  let reportTitle;
+  switch(filter) {
+    case "all":
+      reportTitle = "📊 *BÁO CÁO TỔNG HỢP*";
+      break;
+    case "month":
+      reportTitle = `📊 *BÁO CÁO THÁNG ${dateParam}*`;
+      break;
+    case "week":
+      reportTitle = "📊 *BÁO CÁO TUẦN*";
+      break;
+  }
+
+  const balance = income - expense;
+  const balanceIcon = balance >= 0 ? "📈" : "📉";
+
   const report = [
-    `Báo cáo (${filter === "all" ? "tổng" : filter}${weekInfo}):`,
-    `Tổng thu: ${formatCurrency(income)}`,
-    `Tổng chi: ${formatCurrency(expense)}`,
-    `Cân đối: ${formatCurrency(income - expense)}`,
+    reportTitle,
+    weekInfo,
     "",
-    "Giao dịch thu nhập cụ thể:",
-    incomeTransactions.length ? incomeTransactions.join("\n") : "Không có giao dịch thu nhập.",
+    "💰 *TỔNG QUAN TÀI CHÍNH*",
+    `├─ 📥 Thu nhập: \`${formatCurrency(income)}\``,
+    `├─ 📤 Chi tiêu: \`${formatCurrency(expense)}\``,
+    `└─ ${balanceIcon} Cân đối: \`${formatCurrency(balance)}\``,
     "",
-    "Giao dịch chi tiêu cụ thể:",
-    expenseTransactions.length ? expenseTransactions.join("\n") : "Không có giao dịch chi tiêu.",
-  ].join("\n");
+    "📋 *CHI TIẾT GIAO DỊCH*",
+    "",
+    "📥 *Giao dịch thu nhập:*",
+    incomeTransactions.length ? incomeTransactions.join("\n") : "      💬 Không có giao dịch thu nhập",
+    "",
+    "📤 *Giao dịch chi tiêu:*",
+    expenseTransactions.length ? expenseTransactions.join("\n") : "      💬 Không có giao dịch chi tiêu",
+    "",
+    sortOrder ? `\n🔄 *Sắp xếp:* ${sortOrder === "az" ? "Tăng dần" : "Giảm dần"}` : "",
+  ].filter(Boolean).join("\n");
 
   sendMessage(chatId, report);
 }
