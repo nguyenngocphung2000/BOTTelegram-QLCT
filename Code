@@ -217,13 +217,14 @@ function handleReport(chatId, text) {
     sortOrder = "za";
   }
 
-  if (dateParam) {
+  if (text.includes("/report day")) {
+    filter = "day";
+  } else if (dateParam) {
     filter = dateParam.length === 7 ? "month" : "week";
   }
 
   generateReport(chatId, filter, dateParam, sortOrder);
 }
-
 function generateReport(chatId, filter, dateParam, sortOrder) {
   const sheet = SpreadsheetApp.openById(SHEET_ID).getActiveSheet();
   const data = sheet.getDataRange().getValues().slice(1);
@@ -237,6 +238,15 @@ function generateReport(chatId, filter, dateParam, sortOrder) {
   const filteredData = data.filter(([date]) =>
     isValidDate(new Date(date), filter, now)
   );
+
+  if (filter === "day") {
+    const today = new Date();
+    const todayString = today.toLocaleDateString("vi-VN");
+    filteredData = data.filter(([date]) => {
+      const transactionDate = new Date(date).toLocaleDateString("vi-VN");
+      return transactionDate === todayString;
+    });
+  }
 
   if (sortOrder) {
     filteredData.sort((a, b) => {
@@ -260,19 +270,32 @@ function generateReport(chatId, filter, dateParam, sortOrder) {
       hour12: false,
     });
 
-const transaction = `- \`${formatCurrency(amount)}\` : ${desc || "Không có mô tả"} | \`${formattedReportDate}\``;
+    const transaction = `- \`${formatCurrency(amount)}\` : ${desc || "Không có mô tả"} | \`${formattedReportDate}\``;
 
-if (type === "thu") {
-  income += amount;
-  incomeTransactions.push(transaction);
-} else if (type === "chi") {
-  expense += amount;
-  expenseTransactions.push(transaction);
-}
+    if (type === "thu") {
+      income += amount;
+      incomeTransactions.push(transaction);
+    } else if (type === "chi") {
+      expense += amount;
+      expenseTransactions.push(transaction);
+    }
   });
 
   if (!filteredData.length) {
-    const range = filter === "week" ? "tuần" : "tháng";
+    let range;
+    switch (filter) {
+      case "week":
+        range = "tuần";
+        break;
+      case "month":
+        range = "tháng";
+        break;
+      case "day":
+        range = "ngày";
+        break;
+      default:
+        range = "khoảng thời gian";
+    }
     sendMessage(chatId, `⚠️ *Thông báo:* Không có giao dịch nào trong ${range} được yêu cầu.`);
     return;
   }
@@ -292,6 +315,9 @@ if (type === "thu") {
       break;
     case "week":
       reportTitle = "📊 *BÁO CÁO TUẦN*";
+      break;
+    case "day":
+      reportTitle = "📊 *BÁO CÁO NGÀY*";
       break;
   }
 
@@ -331,10 +357,14 @@ function isValidDate(date, filter, now) {
     const { startOfWeek, endOfWeek } = now;
     return date >= startOfWeek && date <= endOfWeek;
   }
+ if (filter === "day") {
+    return date >= now.startOfDay && date < now.endOfDay;
+  }
   return true;
 }
 
 function parseDate(filter, dateParam) {
+const now = new Date();
   if (!dateParam) return new Date();
   const parts = dateParam.split("/");
   if (filter === "month" && parts.length === 2) {
@@ -349,6 +379,11 @@ function parseDate(filter, dateParam) {
     date.endOfWeek.setDate(date.startOfWeek.getDate() + 6);
     return date;
   }
+  if (filter === "day") {
+    return {
+      startOfDay: new Date(now.getFullYear(), now.getMonth(), now.getDate()),
+      endOfDay: new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1),
+    };
   return new Date();
 }
 
