@@ -1,6 +1,8 @@
 # Hướng dẫn cài đặt và sử dụng Telegram Bot quản lý tài chính
 ---
 ## UPDATES
+ ### Hạn chế gửi tin nhắn báo sai cú pháp trong nhóm nhiều người, khi nhập đúng cú pháp thu/chi hoặc các lệnh bot mới phản hồi, nhập cú pháp giao dịch sai nhưng sai cú pháp bot vẫn sẽ phản hồi, tương tự các lệnh cũng vậy
+ 
  ### Quản lý danh sách người dùng được phép sử dụng bot
 
  Phục vui cho việc quản lý hội nhóm được thuận tiện!
@@ -58,16 +60,20 @@ https://docs.google.com/spreadsheets/d/1A2B3C4D5E6F7G8H9I0J/edit#gid=0
 
 ```
 
+
 const TOKEN = "YOUR_TELEGRAM_BOT_TOKEN";
 const API_URL = `https://api.telegram.org/bot${TOKEN}`;
 const SHEET_ID = "YOUR_SHEET_ID";
-const ADMIN_IDS = ["123456789", "987654321"]; // Thay các dãy số ở trong bằng id telegram mà bạn muốn làm admin
+const ADMIN_IDS = ["123456789", "987654321"]; // Thay các dãy số ở trong bằng id telegram của bạn
 
 function doPost(e) {
   const { message } = JSON.parse(e.postData.contents);
   const chatId = message.chat.id;
   const text = message.text;
   const userId = message.from.id;
+if (!isCommand(text)) {
+    return;
+  }
 
   if (!isAuthorizedUser(userId)) {
     sendMessage(chatId, "🚫 Bạn không có quyền sử dụng bot này.");
@@ -86,15 +92,27 @@ function doPost(e) {
     if (text.startsWith("/report")) {
       handleReport(chatId, text);
     } else if (text.startsWith("/reset")) {
-  resetSheet(chatId, userId);
+      resetSheet(chatId);
     } else if (text.startsWith("/undo")) {
       undoLast(chatId);
     } else {
+      const transactionPattern = /^[0-9]+(k|tr)?\s+(thu|chi)\s+.+/i;
+    if (transactionPattern.test(text)) {
       handleTransaction(chatId, text);
+    }
     }
   }
 }
-
+function isCommand(text) {
+  if (!text) return false;
+  
+  const validCommands = ["/start", "/addusers", "/delusers", "/report", "/reset", "/undo"];
+  if (validCommands.some(cmd => text.startsWith(cmd))) {
+    return true;
+  }
+  const transactionPattern = /^[0-9]+(k|tr)?\s+(thu|chi)\s+.+/i;
+  return transactionPattern.test(text);
+}
 function isAdmin(userId) {
   return ADMIN_IDS.includes(String(userId));
 }
@@ -127,9 +145,9 @@ function sendStartMessage(chatId) {
       `   - \`/delusers <id>\`: _Xóa user._\n\n` +
       `4️⃣ *Khác:*\n` +
       `   - \`/undo\`: _Xóa giao dịch gần nhất._\n` +
-      `   - \`/reset\`: _Xóa dữ liệu trừ dữ liệu user (chỉ admin)._\n\n` +
+      `   - \`/reset\`: _Xóa dữ liệu (trừ user)._\n\n` +
         `💡 *Lưu ý:*\n` +
-        `- Số tiền có thể nhập dạng "1234k" (1,234,000) hoặc "1tr" (1,000,000).\n` 
+        `- Số tiền có thể nhập dạng "1234k" (1,234,000) hoặc "1tr" (1,000,000).\n`
       ;
 
   sendMessage(chatId, startMessage);
@@ -164,17 +182,36 @@ function ensureSheetsExist() {
 function handleTransaction(chatId, text) {
   const [amount, type, ...desc] = text.split(" ");
   if (!isValidAmount(amount) || !["thu", "chi"].includes(type.toLowerCase())) {
-    sendMessage(chatId, "Lỗi: Nhập đúng cú pháp <số tiền> <thu/chi> <mô tả>.");
+    sendMessage(chatId, "⚠️ *Lỗi:* Vui lòng nhập đúng cú pháp:\n`<số tiền> <thu/chi> <mô tả>`");
     return;
   }
 
   const description = desc.join(" ");
   const formattedDesc = description.charAt(0).toUpperCase() + description.slice(1);
+  const parsedAmount = parseAmount(amount);
   const sheet = SpreadsheetApp.openById(SHEET_ID).getSheetByName("transactions");
-  sheet.appendRow([new Date(), type.toLowerCase(), parseAmount(amount), formattedDesc || "Không có mô tả"]);
-  sendMessage(chatId, `Đã thêm giao dịch:\nSố tiền: ${amount}\nLoại: ${type}\nMô tả: ${formattedDesc}`);
-}
+  sheet.appendRow([new Date(), type.toLowerCase(), parsedAmount, formattedDesc || "Không có mô tả"]);
 
+  const currentTime = new Date().toLocaleString("vi-VN", {
+    hour: "2-digit",
+    minute: "2-digit",
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+    hour12: false
+  });
+
+  const responseMessage = [
+    "✅ *Đã thêm giao dịch mới thành công!*",
+    "",
+    `⏰ *Thời gian:* ${currentTime}`,
+    `💰 *Số tiền:* ${formatCurrency(parsedAmount)}`,
+    `${type.toLowerCase() === "thu" ? "📈" : "📉"} *Loại:* ${type.toLowerCase() === "thu" ? "Thu nhập" : "Chi tiêu"}`,
+    `📝 *Mô tả:* ${formattedDesc || "Không có mô tả"}`
+  ].join("\n");
+
+  sendMessage(chatId, responseMessage);
+}
 function manageUsers(chatId, userId, text) {
   const args = text.split(" ");
   const command = args[0];
@@ -322,42 +359,6 @@ function generateReport(chatId, filter, dateParam, sortOrder) {
 
   sendMessage(chatId, report);
 }
-function resetSheet(chatId, userId) {
-  if (!isAdmin(userId)) {
-    sendMessage(chatId, "🚫 Bạn không có quyền reset dữ liệu.");
-    return;
-  }
-
-  const sheet = SpreadsheetApp.openById(SHEET_ID).getSheetByName("transactions");
-  
-  if (sheet.getLastRow() < 2) {
-    sendMessage(chatId, "⚠️ Không có dữ liệu để reset.");
-    return;
-  }
-
-  sheet.clearContents();
-  sheet.appendRow(["Thời gian", "Loại", "Số tiền", "Mô tả"]);
-
-  sendMessage(chatId, "✅ Đã xóa toàn bộ dữ liệu giao dịch.");
-}
-function undoLast(chatId) {
-  const sheet = SpreadsheetApp.openById(SHEET_ID).getSheetByName("transactions");
-  const lastRow = sheet.getLastRow();
-
-  if (lastRow < 2) { 
-    sendMessage(chatId, "🚫 Không có giao dịch nào để hoàn tác.");
-    return;
-  }
-
-  const lastTransaction = sheet.getRange(lastRow, 1, 1, sheet.getLastColumn()).getValues()[0];
-  sheet.deleteRow(lastRow);
-  
-  sendMessage(
-    chatId,
-    `🔄 Đã hoàn tác giao dịch gần nhất:\n\n📅 *Thời gian:* ${lastTransaction[0]}\n💰 *Số tiền:* ${formatCurrency(lastTransaction[2])}\n📝 *Mô tả:* ${lastTransaction[3]}`
-  );
-}
-
 function isValidDate(date, filter, now) {
   if (filter === "month") {
     return (
@@ -409,6 +410,7 @@ function sendMessage(chatId, text) {
     payload: JSON.stringify({ chat_id: chatId, text, parse_mode: "Markdown" }),
   });
 }
+
 
 ```
 
