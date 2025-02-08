@@ -386,7 +386,7 @@ const now = new Date();
     };
   return new Date();
 }
-
+}
 function parseAmount(amount) {
   return parseFloat(amount.replace(/tr/gi, "000000").replace(/k/gi, "000")) || 0;
 }
