@@ -224,9 +224,9 @@ function handleReport(chatId, text) {
 }
 
 function generateReport(chatId, filter, dateParam, sortOrder) {
-  const sheet = SpreadsheetApp.openById(SHEET_ID).getSheetByName("Transactions");
+  const sheet = SpreadsheetApp.openById(SHEET_ID).getSheetByName("transactions");
   if (!sheet) {
-    sendMessage(chatId, "⚠️ *Lỗi:* Không tìm thấy sheet `Transactions`.");
+    sendMessage(chatId, "⚠️ *Lỗi:* Không tìm thấy sheet `transactions`.");
     return;
   }
   
@@ -326,9 +326,13 @@ if (type === "thu") {
 }
 function resetSheet(chatId) {
   try {
-    const sheet = SpreadsheetApp.openById(SHEET_ID).getSheetByName("Transactions");
+if (!isAdmin(chatId)) {
+      sendMessage(chatId, "🚫 Bạn không phải là admin.");
+      return;
+}
+    const sheet = SpreadsheetApp.openById(SHEET_ID).getSheetByName("transactions");
   if (!sheet) {
-    sendMessage(chatId, "⚠️ *Lỗi:* Không tìm thấy sheet `Transactions`.");
+    sendMessage(chatId, "⚠️ *Lỗi:* Không tìm thấy sheet `transactions`.");
     return;
 }
     sheet.clear();
@@ -341,9 +345,9 @@ function resetSheet(chatId) {
 }
 function undoLast(chatId) {
   try {
-    const sheet = SpreadsheetApp.openById(SHEET_ID).getSheetByName("Transactions");
+    const sheet = SpreadsheetApp.openById(SHEET_ID).getSheetByName("transactions");
   if (!sheet) {
-    sendMessage(chatId, "⚠️ *Lỗi:* Không tìm thấy sheet `Transactions`.");
+    sendMessage(chatId, "⚠️ *Lỗi:* Không tìm thấy sheet `transactions`.");
     return;
 }
     const lastRow = sheet.getLastRow();
