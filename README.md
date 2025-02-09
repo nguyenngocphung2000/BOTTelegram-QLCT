@@ -63,7 +63,6 @@ https://docs.google.com/spreadsheets/d/1A2B3C4D5E6F7G8H9I0J/edit#gid=0
 
 ```
 
-
 const TOKEN = "YOUR_TELEGRAM_BOT_TOKEN";
 const API_URL = `https://api.telegram.org/bot${TOKEN}`;
 const SHEET_ID = "YOUR_SHEET_ID";
@@ -77,15 +76,19 @@ function doPost(e) {
 if (!isCommand(text)) {
     return;
   }
-
   if (!isAuthorizedUser(userId)) {
     sendMessage(chatId, "🚫 Bạn không có quyền sử dụng bot này.");
     return;
   }
-
   if (text.startsWith("/start")) {
     sendStartMessage(chatId);
-  } else if (text.startsWith("/addusers") || text.startsWith("/delusers")) {
+  } else if (text.startsWith("/reset")) {
+if (!isAdmin(userId)) {
+      sendMessage(chatId, "🚫 Bạn không phải là admin.");
+      return;
+    }
+      resetSheet(chatId);
+    } else if (text.startsWith("/addusers") || text.startsWith("/delusers")) {
     if (!isAdmin(userId)) {
       sendMessage(chatId, "🚫 Bạn không phải là admin.");
       return;
@@ -94,8 +97,6 @@ if (!isCommand(text)) {
   } else {
     if (text.startsWith("/report")) {
       handleReport(chatId, text);
-    } else if (text.startsWith("/reset")) {
-      resetSheet(chatId);
     } else if (text.startsWith("/undo")) {
       undoLast(chatId);
     } else {
@@ -290,7 +291,12 @@ function handleReport(chatId, text) {
 }
 
 function generateReport(chatId, filter, dateParam, sortOrder) {
-  const sheet = SpreadsheetApp.openById(SHEET_ID).getActiveSheet();
+  const sheet = SpreadsheetApp.openById(SHEET_ID).getSheetByName("Transactions");
+  if (!sheet) {
+    sendMessage(chatId, "⚠️ *Lỗi:* Không tìm thấy sheet `Transactions`.");
+    return;
+  }
+  
   const data = sheet.getDataRange().getValues().slice(1);
 
   if (!data.length) {
@@ -385,6 +391,40 @@ if (type === "thu") {
 
   sendMessage(chatId, report);
 }
+function resetSheet(chatId) {
+  try {
+    const sheet = SpreadsheetApp.openById(SHEET_ID).getSheetByName("Transactions");
+  if (!sheet) {
+    sendMessage(chatId, "⚠️ *Lỗi:* Không tìm thấy sheet `Transactions`.");
+    return;
+}
+    sheet.clear();
+    sheet.appendRow(["Thời gian", "Loại", "Số tiền", "Mô tả"]);
+    sendMessage(chatId, "✅ *Đã xóa toàn bộ dữ liệu.*", true);
+  } catch (error) {
+    console.error("Lỗi trong hàm resetSheet:", error);
+    sendMessage(chatId, "❌ *Đã xảy ra lỗi khi xóa dữ liệu.*", true);
+  }
+}
+function undoLast(chatId) {
+  try {
+    const sheet = SpreadsheetApp.openById(SHEET_ID).getSheetByName("Transactions");
+  if (!sheet) {
+    sendMessage(chatId, "⚠️ *Lỗi:* Không tìm thấy sheet `Transactions`.");
+    return;
+}
+    const lastRow = sheet.getLastRow();
+    if (lastRow > 1) {
+      sheet.deleteRow(lastRow);
+      sendMessage(chatId, "✅ *Đã xóa giao dịch gần nhất.*", true);
+    } else {
+      sendMessage(chatId, "ℹ️ *Không có giao dịch nào để xóa.*", true);
+    }
+  } catch (error) {
+    console.error("Lỗi trong hàm undoLast:", error);
+    sendMessage(chatId, "❌ *Đã xảy ra lỗi khi xóa giao dịch.*", true);
+  }
+}
 function isValidDate(date, filter, now) {
   if (filter === "month") {
     return (
@@ -436,7 +476,6 @@ function sendMessage(chatId, text) {
     payload: JSON.stringify({ chat_id: chatId, text, parse_mode: "Markdown" }),
   });
 }
-
 
 ```
 
