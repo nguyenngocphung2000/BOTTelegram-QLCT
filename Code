@@ -1,4 +1,3 @@
-
 const TOKEN = "YOUR_TELEGRAM_BOT_TOKEN";
 const API_URL = `https://api.telegram.org/bot${TOKEN}`;
 const SHEET_ID = "YOUR_SHEET_ID";
@@ -217,16 +216,20 @@ function handleReport(chatId, text) {
     sortOrder = "za";
   }
 
-  if (text.includes("/report day")) {
-    filter = "day";
-  } else if (dateParam) {
+  if (dateParam) {
     filter = dateParam.length === 7 ? "month" : "week";
   }
 
   generateReport(chatId, filter, dateParam, sortOrder);
 }
+
 function generateReport(chatId, filter, dateParam, sortOrder) {
-  const sheet = SpreadsheetApp.openById(SHEET_ID).getActiveSheet();
+  const sheet = SpreadsheetApp.openById(SHEET_ID).getSheetByName("Transactions");
+  if (!sheet) {
+    sendMessage(chatId, "⚠️ *Lỗi:* Không tìm thấy sheet `Transactions`.");
+    return;
+  }
+  
   const data = sheet.getDataRange().getValues().slice(1);
 
   if (!data.length) {
@@ -238,15 +241,6 @@ function generateReport(chatId, filter, dateParam, sortOrder) {
   const filteredData = data.filter(([date]) =>
     isValidDate(new Date(date), filter, now)
   );
-
-  if (filter === "day") {
-    const today = new Date();
-    const todayString = today.toLocaleDateString("vi-VN");
-    filteredData = data.filter(([date]) => {
-      const transactionDate = new Date(date).toLocaleDateString("vi-VN");
-      return transactionDate === todayString;
-    });
-  }
 
   if (sortOrder) {
     filteredData.sort((a, b) => {
@@ -270,32 +264,19 @@ function generateReport(chatId, filter, dateParam, sortOrder) {
       hour12: false,
     });
 
-    const transaction = `- \`${formatCurrency(amount)}\` : ${desc || "Không có mô tả"} | \`${formattedReportDate}\``;
+const transaction = `- \`${formatCurrency(amount)}\` : ${desc || "Không có mô tả"} | \`${formattedReportDate}\``;
 
-    if (type === "thu") {
-      income += amount;
-      incomeTransactions.push(transaction);
-    } else if (type === "chi") {
-      expense += amount;
-      expenseTransactions.push(transaction);
-    }
+if (type === "thu") {
+  income += amount;
+  incomeTransactions.push(transaction);
+} else if (type === "chi") {
+  expense += amount;
+  expenseTransactions.push(transaction);
+}
   });
 
   if (!filteredData.length) {
-    let range;
-    switch (filter) {
-      case "week":
-        range = "tuần";
-        break;
-      case "month":
-        range = "tháng";
-        break;
-      case "day":
-        range = "ngày";
-        break;
-      default:
-        range = "khoảng thời gian";
-    }
+    const range = filter === "week" ? "tuần" : "tháng";
     sendMessage(chatId, `⚠️ *Thông báo:* Không có giao dịch nào trong ${range} được yêu cầu.`);
     return;
   }
@@ -315,9 +296,6 @@ function generateReport(chatId, filter, dateParam, sortOrder) {
       break;
     case "week":
       reportTitle = "📊 *BÁO CÁO TUẦN*";
-      break;
-    case "day":
-      reportTitle = "📊 *BÁO CÁO NGÀY*";
       break;
   }
 
@@ -346,6 +324,40 @@ function generateReport(chatId, filter, dateParam, sortOrder) {
 
   sendMessage(chatId, report);
 }
+function resetSheet(chatId) {
+  try {
+    const sheet = SpreadsheetApp.openById(SHEET_ID).getSheetByName("Transactions");
+  if (!sheet) {
+    sendMessage(chatId, "⚠️ *Lỗi:* Không tìm thấy sheet `Transactions`.");
+    return;
+}
+    sheet.clear();
+    sheet.appendRow(["Thời gian", "Loại", "Số tiền", "Mô tả"]);
+    sendMessage(chatId, "✅ *Đã xóa toàn bộ dữ liệu.*", true);
+  } catch (error) {
+    console.error("Lỗi trong hàm resetSheet:", error);
+    sendMessage(chatId, "❌ *Đã xảy ra lỗi khi xóa dữ liệu.*", true);
+  }
+}
+function undoLast(chatId) {
+  try {
+    const sheet = SpreadsheetApp.openById(SHEET_ID).getSheetByName("Transactions");
+  if (!sheet) {
+    sendMessage(chatId, "⚠️ *Lỗi:* Không tìm thấy sheet `Transactions`.");
+    return;
+}
+    const lastRow = sheet.getLastRow();
+    if (lastRow > 1) {
+      sheet.deleteRow(lastRow);
+      sendMessage(chatId, "✅ *Đã xóa giao dịch gần nhất.*", true);
+    } else {
+      sendMessage(chatId, "ℹ️ *Không có giao dịch nào để xóa.*", true);
+    }
+  } catch (error) {
+    console.error("Lỗi trong hàm undoLast:", error);
+    sendMessage(chatId, "❌ *Đã xảy ra lỗi khi xóa giao dịch.*", true);
+  }
+}
 function isValidDate(date, filter, now) {
   if (filter === "month") {
     return (
@@ -357,14 +369,10 @@ function isValidDate(date, filter, now) {
     const { startOfWeek, endOfWeek } = now;
     return date >= startOfWeek && date <= endOfWeek;
   }
- if (filter === "day") {
-    return date >= now.startOfDay && date < now.endOfDay;
-  }
   return true;
 }
 
 function parseDate(filter, dateParam) {
-const now = new Date();
   if (!dateParam) return new Date();
   const parts = dateParam.split("/");
   if (filter === "month" && parts.length === 2) {
@@ -379,14 +387,9 @@ const now = new Date();
     date.endOfWeek.setDate(date.startOfWeek.getDate() + 6);
     return date;
   }
-  if (filter === "day") {
-    return {
-      startOfDay: new Date(now.getFullYear(), now.getMonth(), now.getDate()),
-      endOfDay: new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1),
-    };
   return new Date();
 }
-}
+
 function parseAmount(amount) {
   return parseFloat(amount.replace(/tr/gi, "000000").replace(/k/gi, "000")) || 0;
 }
@@ -406,3 +409,4 @@ function sendMessage(chatId, text) {
     payload: JSON.stringify({ chat_id: chatId, text, parse_mode: "Markdown" }),
   });
 }
+
