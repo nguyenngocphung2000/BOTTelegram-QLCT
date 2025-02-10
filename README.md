@@ -473,15 +473,40 @@ function isValidAmount(amount) {
 function formatCurrency(amount) {
   return new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(amount);
 }
-
 function sendMessage(chatId, text) {
-  UrlFetchApp.fetch(`${API_URL}/sendMessage`, {
-    method: "post",
-    contentType: "application/json",
-    payload: JSON.stringify({ chat_id: chatId, text, parse_mode: "Markdown" }),
-  });
+  const MAX_MESSAGE_LENGTH = 4096;
+  if (text.length <= MAX_MESSAGE_LENGTH) {
+    UrlFetchApp.fetch(`${API_URL}/sendMessage`, {
+      method: "post",
+      contentType: "application/json",
+      payload: JSON.stringify({ chat_id: chatId, text, parse_mode: "Markdown"}),
+    });
+  } else {
+    const parts = splitMessage(text, MAX_MESSAGE_LENGTH);
+    parts.forEach(part => {
+      UrlFetchApp.fetch(`${API_URL}/sendMessage`, {
+        method: "post",
+        contentType: "application/json",
+        payload: JSON.stringify({ chat_id: chatId, text: part, parse_mode: "Markdown"}),
+      });
+    });
+  }
 }
 
+function splitMessage(text, maxLength) {
+  const parts = [];
+  while (text.length > maxLength) {
+    let part = text.slice(0, maxLength);
+    const lastNewLineIndex = part.lastIndexOf('\n');
+    if (lastNewLineIndex > -1) {
+      part = text.slice(0, lastNewLineIndex + 1);
+    }
+    parts.push(part);
+    text = text.slice(part.length);
+  }
+  parts.push(text);
+  return parts;
+}
 
 
 ```
