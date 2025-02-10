@@ -1,6 +1,9 @@
 # Hướng dẫn cài đặt và sử dụng Telegram Bot quản lý tài chính
 ---
 ## UPDATES
+ ### Tách dòng gửi tin nhắn khi báo cáo quá nhiều giao dịch 
+  From:
+ (https://github.com/htcminh)
  ### Hạn chế gửi tin nhắn báo sai cú pháp trong nhóm nhiều người.
   Bỏ qua các tin nhắn không có mục đích tương tác với bot.
   
