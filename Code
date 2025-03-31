@@ -1,8 +1,27 @@
-const TOKEN = "YOUR_TELEGRAM_BOT_TOKEN";
+
+const TOKEN = "TOKE BOT TELEGRAM";
 const API_URL = `https://api.telegram.org/bot${TOKEN}`;
-const SHEET_ID = "YOUR_SHEET_ID";
+const SHEET_ID = "TUY KO CNF THIẾT NHƯNG HÃY THÊM";
 const ADMIN_IDS = ["123456789", "987654321"]; // Thay các dãy số ở trong bằng id telegram của bạn
 
+function setWebhook() {
+	// URL TRIỂN KHAI
+  var webAppUrl = 'https://';
+  
+  var payload = {
+    method: 'setWebhook',
+    url: webAppUrl
+  };
+
+  var options = {
+    method: 'post',
+    payload: JSON.stringify(payload),
+    contentType: 'application/json'
+  };
+
+  var response = UrlFetchApp.fetch(API_URL + '/', options);
+  Logger.log(response.getContentText());
+}
 function doPost(e) {
   const { message } = JSON.parse(e.postData.contents);
   const chatId = message.chat.id;
@@ -439,3 +458,4 @@ function splitMessage(text, maxLength) {
   parts.push(text);
   return parts;
 }
+
