@@ -93,7 +93,7 @@ function sendStartMessage(chatId) {
       `1️⃣ *Thêm giao dịch:*\n   _Nhập theo cú pháp:_ <số tiền> <thu/chi> <mô tả>.\n` +
         `   *Ví dụ:* \`14629k thu Lương t1\`\n\n` +
       `2️⃣. *Xem báo cáo:*\n` +
-					`   - \`/giavang\`: Xem giá vàng time life.\n` +
+					`   - \`/giavang\`: Xem giá vàng SJC time life.\n` +
         `   - \`/report\`: Báo cáo tổng.\n` +
         `   - \`/report mm/yyyy\`: Báo cáo tháng.\n` +
         `   - \`/report dd/mm/yyyy\`: Báo cáo tuần (hiển thị tuần có ngày được chọn).\n` +
@@ -355,9 +355,18 @@ function handleReportDay(chatId, text) {
   const dateRegex = /(\d{2})\/(\d{2})\/(\d{4})/;
   const match = text.match(dateRegex);
   
+  let targetDate;
+
   if (!match) {
-    sendMessage(chatId, "⚠️ *Lỗi định dạng:* Vui lòng nhập đúng định dạng /reportday dd/mm/yyyy\nVí dụ: /reportday 15/05/2023");
-    return;
+    targetDate = new Date();
+  } else {
+    const [_, day, month, year] = match;
+    targetDate = new Date(year, month - 1, day);
+    
+    if (isNaN(targetDate.getTime())) {
+      sendMessage(chatId, "⚠️ *Ngày không hợp lệ:* Vui lòng kiểm tra lại ngày tháng\nVí dụ: /reportday 15/05/2023");
+      return;
+    }
   }
 
   let sortOrder = null;
@@ -365,14 +374,6 @@ function handleReportDay(chatId, text) {
     sortOrder = "az";
   } else if (text.includes(" za")) {
     sortOrder = "za";
-  }
-
-  const [_, day, month, year] = match;
-  const targetDate = new Date(year, month - 1, day);
-  
-  if (isNaN(targetDate.getTime())) {
-    sendMessage(chatId, "⚠️ *Ngày không hợp lệ:* Vui lòng kiểm tra lại ngày tháng\nVí dụ: /reportday 15/05/2023");
-    return;
   }
 
   const sheet = SpreadsheetApp.openById(SHEET_ID).getSheetByName("transactions");
@@ -569,72 +570,41 @@ function splitMessage(text, maxLength) {
   return parts;
 }
 //Giá vàng
+
 function getGoldPrices() {
   const sheet = SpreadsheetApp.openById(SHEET_ID).getSheetByName("goldprices");
-	const randomValue = new Date().getTime();
-  
-  sheet.getRange("E1").setValue(randomValue);
-	const targetCell = sheet.getRange("A1");
-  const url = `https://data.giavangvietnam.com/api/data/home?cache=${randomValue}`;
-  
-  targetCell.setFormula(`=IMPORTHTML("${url}"; "table"; 1)`);
-  const data = sheet.getRange("A1:D8").getValues();
-  
-  if (!data || data.length < 2) {
-    throw new Error('Không tìm thấy dữ liệu giá vàng');
-  }
+  const randomValue = new Date().getTime();
 
-  let report = `🔔 *${data[0][0]}* 🔔\n`;
-  report += `_${data[1][0]}_\n\n`;
+  sheet.getRange("F2").setValue(randomValue);
+  const url = `https://data.giavangvietnam.com/api/data/sjc?cache=${randomValue}`;
+  sheet.getRange("A1").setFormula(`=IMPORTHTML("${url}"; "table"; 1)`);
+
+  const data = sheet.getRange("A1:E25").getValues();
+
+  let report = `*🔔 Giá Vàng SJC 🔔*\n`;
+		   report += `${data[0][0]}\n`;
+  let currentRegion = '';
+
   for (let i = 2; i < data.length; i++) {
-    const [name, buy, sell, diff] = data[i];
-    if (name) {
-      report += `🏷️ *${name}*\n`;
-      report += `• Mua vào: ${buy || '-'}\n`;
-      report += `• Bán ra: ${sell || '-'}\n`;
+    const [regionCell, type, buy, sell] = data[i];
+
+    
+    if (regionCell && regionCell !== currentRegion) {
+      currentRegion = regionCell;
+      report += `\n*🏷️${currentRegion}*\n`;
+    }
+
+    if (type && buy && sell) {
+		 const buyPrice = buy.split('\n')[0];
+    const sellPrice = sell.split('\n')[0];
+		const buyDiff = buy.split('\n')[1] || '';
+		const sellDiff = sell.split('\n')[1] || '';
+    report += `- *${type}*\n`;
+    report += `    • Mua vào: ${buyPrice} ${buyDiff}\n`;
+    report += `    • Bán ra: ${sellPrice} ${sellDiff}\n`;
+     
     }
   }
 
   return report.trim();
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
