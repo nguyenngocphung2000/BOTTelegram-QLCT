@@ -1,7 +1,7 @@
 
 const TOKEN = "TOKE BOT TELEGRAM";
 const API_URL = `https://api.telegram.org/bot${TOKEN}`;
-const SHEET_ID = "TUY KO CNF THIẾT NHƯNG HÃY THÊM";
+const SHEET_ID = "ID SHEET CỦA BẠN";
 const ADMIN_IDS = ["123456789", "987654321"]; // Thay các dãy số ở trong bằng id telegram của bạn
 
 function setWebhook() {
