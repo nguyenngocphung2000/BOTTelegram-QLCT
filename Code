@@ -1,16 +1,28 @@
+// ==========================================
+// CẤU HÌNH THÔNG TIN (BẮT BUỘC NHẬP)
+// ==========================================
 
-const TOKEN = "TOKE BOT TELEGRAM";
+// 1. Token Bot Telegram (Lấy từ @BotFather)
+const TOKEN = "YOUR_TELEGRAM_BOT_TOKEN";
+
+// 2. ID Google Sheets (Lấy từ link trình duyệt)
+const SHEET_ID = "YOUR_SHEET_ID";
+
+// 3. ID Telegram Admin (Ví dụ: ["12345678", "87654321"])
+const ADMIN_IDS = ["YOUR_ADMIN_ID"];
+
+// 4. URL Web App (Sau khi bấm 'Deploy' trong Apps Script)
+const WEB_APP_URL = "YOUR_WEB_APP_URL";
+
+// ==========================================
+// HỆ THỐNG XỬ LÝ (KHÔNG CẦN THAY ĐỔI)
+// ==========================================
 const API_URL = `https://api.telegram.org/bot${TOKEN}`;
-const SHEET_ID = "ID SHEET CỦA BẠN";
-const ADMIN_IDS = ["123456789", "987654321"]; // Thay các dãy số ở trong bằng id telegram của bạn
 
 function setWebhook() {
-	// URL TRIỂN KHAI
-  var webAppUrl = 'https://';
-  
   var payload = {
     method: 'setWebhook',
-    url: webAppUrl
+    url: WEB_APP_URL
   };
 
   var options = {
@@ -29,12 +41,7 @@ function doPost(e) {
   const userId = message.from.id;
 if (!isCommand(text)) {
     return;
-  }
-
-  if (!isAuthorizedUser(userId)) {
-    sendMessage(chatId, "🚫 Bạn không có quyền sử dụng bot này.");
-    return;
-  }
+}
 
   if (text.startsWith("/start")) {
     sendStartMessage(chatId);
@@ -550,7 +557,9 @@ function sendMessage(chatId, text) {
         method: "post",
         contentType: "application/json",
         payload: JSON.stringify({ chat_id: chatId, text: part, parse_mode: "Markdown"}),
-      });
+      }); 
+      if (index < parts.length - 1) {
+        Utilities.sleep(500);}
     });
   }
 }
@@ -559,7 +568,7 @@ function splitMessage(text, maxLength) {
   const parts = [];
   while (text.length > maxLength) {
     let part = text.slice(0, maxLength);
-    const lastNewLineIndex = part.lastIndexOf('\n');
+    const lastNewLineIndex = part.lastIndexOf(' ');
     if (lastNewLineIndex > -1) {
       part = text.slice(0, lastNewLineIndex + 1);
     }
