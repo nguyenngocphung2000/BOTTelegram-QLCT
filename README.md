@@ -1,5 +1,5 @@
 
-# Hướng dẫn cài đặt và sử dụng Telegram Bot quản lý tài chính
+# Hướng dẫn cài đặt và sử dụng Bot Telegram quản lý tài chính bảo mật dữ liệu
 ![Banner](banner.png)
 ---
 ## UPDATES
@@ -29,12 +29,13 @@
 
 ---
 ## 1. Giới thiệu
-Telegram bot giúp bạn quản lý tài chính cá nhân, lưu trữ dữ liệu trên Google Sheets và cung cấp báo cáo theo thời gian. 
+Telegram bot giúp bạn quản lý tài chính cá nhân, lưu trữ dữ liệu trên Google Sheets của riêng bạn đảm bảo về an toàn thông tin và cung cấp báo cáo theo lệnh. 
 
 Bạn có thể:
-- Thêm giao dịch thu/chi.
+- Thêm giao dịch thu/chi bằng cú pháp đơn giản(sẽ tự động bỏ qua tin nhắn không có mục đích tương tác với bot).
 - Xem báo cáo theo tuần, tháng.
 - Xóa giao dịch gần nhất hoặc toàn bộ dữ liệu.
+- Quản lý ID telegram có quyền sử dụng bot
 
 ---
 
